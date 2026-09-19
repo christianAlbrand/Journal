@@ -6,12 +6,23 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct JournalApp: App {
+// 1.- SAFER
+//    var modelContainer:ModelContainer = {
+//        do {
+//            return try ModelContainer(for:JournalEntry.self)
+//        }catch {
+//            fatalError("Error loading container...")
+//        }
+//    }()
     var body: some Scene {
         WindowGroup {
-            ContentView()
-        }
+            NavigationStack {
+                EntryListView()
+            }
+        }.modelContainer(for:JournalEntry.self)
     }
 }
