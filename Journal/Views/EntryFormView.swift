@@ -4,49 +4,69 @@
 //
 //  Created by Christian-SDGKU on 16/09/26.
 //
-
+// Provides a form to create and edit journal entries.
 import SwiftUI
 import SwiftData
 
 struct EntryFormView: View {
     
-    @Environment(\.dismiss) var dismiss
-    @Environment(\.modelContext) var context
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
     
-    let entry:JournalEntry? // if == nil -> then create a new one
+    let entry: JournalEntry?
     
-    @State var title: String = ""
-    @State var entryBody: String = ""
-    @State var isFavorite: Bool = false
+    @State private var title = ""
+    @State private var entryBody = ""
+    @State private var isFavorite = false
+    
     var body: some View {
-        Form{
-            Section("Title"){
-                TextField("Enter title...", text:$title)
+        Form {
+            
+            Section("Title") {
+                TextField(
+                    "Enter title...",
+                    text: $title
+                )
             }
             
-            Section("Body"){
+            Section("Body") {
                 TextEditor(text: $entryBody)
                     .frame(height: 220)
             }
             
-            Section("Favorite"){
-                Toggle("Mark as favorite",isOn: $isFavorite)
+            Section("Favorite") {
+                Toggle(
+                    "Mark as favorite",
+                    isOn: $isFavorite
+                )
             }
         }
-        .navigationTitle(entry == nil ? "New Entry" : "Edit Entry")
-        .toolbar{
-            ToolbarItem(placement: .topBarLeading){
-                Button("Cancel"){ dismiss()}
+        .navigationTitle(
+            entry == nil ? "New Entry" : "Edit Entry"
+        )
+        .toolbar {
+            
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Cancel") {
+                    dismiss()
+                }
             }
-            ToolbarItem(placement: .topBarLeading){
-                Button("Save"){
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Save") {
                     save()
                 }
-                .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(
+                    title
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                        .isEmpty
+                )
             }
         }
-        .onAppear{
-            guard let entry else { return }
+        .onAppear {
+            guard let entry else {
+                return
+            }
             
             title = entry.title
             entryBody = entry.body
@@ -54,24 +74,44 @@ struct EntryFormView: View {
         }
     }
     
-    private func save(){
-        let t = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let b = entryBody.trimmingCharacters(in: .whitespacesAndNewlines)
+    private func save() {
+        let cleanTitle = title.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
         
-        guard !t.isEmpty else { return }
+        let cleanBody = entryBody.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
         
-        if let entry{
-            entry.title = t
-            entry.body = b
-            entry.isFavorite = isFavorite
-        }else {
-            context.insert(JournalEntry(title: t, body: b, isFavorite: isFavorite))
+        guard !cleanTitle.isEmpty else {
+            return
         }
+        
+        if let entry {
+            entry.title = cleanTitle
+            entry.body = cleanBody
+            entry.isFavorite = isFavorite
+        } else {
+            let newEntry = JournalEntry(
+                title: cleanTitle,
+                body: cleanBody,
+                isFavorite: isFavorite
+            )
+            
+            context.insert(newEntry)
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            print("Error saving entry: \(error)")
+            return
+        }
+        
         dismiss()
     }
 }
 
-// Works like a parent view
 #Preview {
     NavigationStack {
         EntryFormView(entry: nil)

@@ -4,6 +4,7 @@
 //
 //  Created by Christian-SDGKU on 16/09/26.
 //
+// Displays the complete information of a journal entry and provides edit, favorite, and delete actions.
 
 import SwiftUI
 import SwiftData
